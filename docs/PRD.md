@@ -117,7 +117,7 @@ Cases:
 33. If the file is normalised, the score of a record is the dot product of the normalised query and the stored vector. If not, the score is the full cosine: dot product divided by the stored vector's norm, computed during the same pass. A stored vector with zero norm in an unnormalised file scores 0.0.
 34. Scores are clamped to the range -1.0 to 1.0 to absorb float32 rounding.
 35. The scanner reads the payload in chunks of a whole number of records, sized from a byte budget (default 4 MiB, at least one record). A short read is not trusted to end on a record boundary: leftover bytes are carried into the next read. If the handle reaches end of file with leftover bytes, or before `count` records were read, the file is corrupt.
-36. Values are unpacked one record at a time with a format that yields exactly `dim` floats, and are re-indexed from 0 before any arithmetic, or are read with explicit 1-based offsets. Either way, a test proves that the first and last value of every record contribute to the score (case 30 and rule 14.1).
+36. Values are unpacked one record at a time with a format that yields exactly `dim` floats, and are re-indexed from 0 before any arithmetic, or are read with explicit 1-based offsets. Either way, a test proves that the first and last value of every record contribute to the score (case 30 and lesson 1 in section 14).
 37. Top-k keeps the k best hits in a bounded structure while scanning, never a list of every record. Order: higher score first; for equal scores, lower id first, then lower ref. The order is deterministic for a given file and query.
 38. `k` must be an integer from 1 to 10,000. Anything else is an invalid-argument exception.
 39. An optional minimum score drops hits below it before they enter the top-k. Default: no minimum. The production caller used 0.30 for normalised text embeddings; that value is documented as an example, not a default.
@@ -395,7 +395,7 @@ Each test names the cases it covers.
 53. (57) A scan of a missing target during a slow build throws file-missing.
 54. (58) Two builders with the lock off both finish; the final file is one of the two complete outputs.
 55. (59) Unlinking the target mid-scan does not affect that scan's result.
-56. (10, 64-bit) The bootstrap refuses to load on a 32-bit build (tested by a unit test of the guard function with the integer size injected).
+56. (section 10, 64-bit) The bootstrap refuses to load on a 32-bit build (tested by a unit test of the guard function with the integer size injected).
 57. (5.3) `bin/packed-vectors info` and `verify` exit 0 on a good file and non-zero on a corrupt one.
 
 ## 13. Open questions
