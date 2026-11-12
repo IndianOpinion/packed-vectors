@@ -1,0 +1,10 @@
+parameters:
+    level: 8
+    paths:
+        - src
+        - bin/packed-vectors
+        - bootstrap.php
+        - tests
+        - examples
+        - benchmarks
+    treatPhpDocTypesAsCertain: false

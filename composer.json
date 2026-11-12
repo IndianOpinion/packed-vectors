@@ -1,0 +1,52 @@
+{
+    "name": "indianopinion/packed-vectors",
+    "description": "Packed float32 embedding file for PHP: atomic rebuild, exact cosine top-k scan in bounded memory, and a chunked fallback scanner.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["embeddings", "vectors", "cosine", "similarity", "search", "float32", "top-k"],
+    "homepage": "https://github.com/IndianOpinion/packed-vectors",
+    "support": {
+        "issues": "https://github.com/IndianOpinion/packed-vectors/issues",
+        "source": "https://github.com/IndianOpinion/packed-vectors"
+    },
+    "authors": [
+        {
+            "name": "Indian Opinion",
+            "email": "hello@indianopinion.org"
+        }
+    ],
+    "require": {
+        "php": ">=8.1"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^10.5",
+        "squizlabs/php_codesniffer": "^3.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "IndianOpinion\\PackedVectors\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "IndianOpinion\\PackedVectors\\Tests\\": "tests/"
+        }
+    },
+    "bin": [
+        "bin/packed-vectors"
+    ],
+    "scripts": {
+        "test": "phpunit",
+        "analyse": "phpstan analyse --no-progress",
+        "cs": "phpcs",
+        "bench": "php benchmarks/bench.php"
+    },
+    "config": {
+        "sort-packages": true,
+        "platform": {
+            "php": "8.1.0"
+        }
+    },
+    "minimum-stability": "stable"
+}
