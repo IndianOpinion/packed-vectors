@@ -36,8 +36,18 @@ class Scanner
      */
     public const UNPACK_BLOCK_VALUES = 32768;
 
-    /** The time budget is checked once every this many records. */
+    /**
+     * The time budget is checked at least once every this many records, and
+     * more often for large dims (see budgetCheckInterval()).
+     */
     public const BUDGET_CHECK_EVERY = 256;
+
+    /**
+     * The time budget is also checked at least once every this many stored
+     * values, so a file of a few records with a very large dim cannot run
+     * far past its budget between checks.
+     */
+    public const BUDGET_CHECK_VALUES = 65536;
 
     private readonly ScanOptions $options;
 
@@ -140,6 +150,16 @@ class Scanner
     }
 
     /**
+     * Records between two time budget checks for vectors of $dim values:
+     * BUDGET_CHECK_EVERY, or fewer when that many records would hold more
+     * than BUDGET_CHECK_VALUES values. Always at least 1.
+     */
+    public static function budgetCheckInterval(int $dim): int
+    {
+        return max(1, min(self::BUDGET_CHECK_EVERY, intdiv(self::BUDGET_CHECK_VALUES, max(1, $dim))));
+    }
+
+    /**
      * Called right after fopen() succeeds, before the size is taken from
      * the handle. Seam for tests.
      *
@@ -176,6 +196,7 @@ class Scanner
         $floor = -INF;
         $budget = $this->options->timeBudgetSeconds;
         $deadline = $budget === null ? null : $started + (int) ($budget * 1e9);
+        $checkEvery = self::budgetCheckInterval($dim);
         $scanned = 0;
         $bytes = 0;
 
@@ -228,7 +249,7 @@ class Scanner
                         $floor = $topk->offer($score, $key[1], $key[2]);
                     }
 
-                    if ($deadline !== null && ($scanned % self::BUDGET_CHECK_EVERY) === 0) {
+                    if ($deadline !== null && ($scanned % $checkEvery) === 0) {
                         $now = (int) hrtime(true);
                         if ($now > $deadline) {
                             throw new BudgetExceededException($scanned, ($now - $started) / 1e9, (float) $budget);

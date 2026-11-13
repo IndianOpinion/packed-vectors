@@ -78,6 +78,7 @@ final class ChunkedScanner
         $floor = -INF;
         $budget = $this->options->timeBudgetSeconds;
         $deadline = $budget === null ? null : $started + (int) ($budget * 1e9);
+        $checkEvery = Scanner::budgetCheckInterval($dim);
         $scanned = 0;
         $skipped = 0;
         $after = 0;
@@ -137,7 +138,7 @@ final class ChunkedScanner
                     }
                 }
 
-                if ($deadline !== null && ($scanned % Scanner::BUDGET_CHECK_EVERY) === 0) {
+                if ($deadline !== null && ($scanned % $checkEvery) === 0) {
                     self::checkBudget($deadline, $started, $scanned, (float) $budget);
                 }
             }

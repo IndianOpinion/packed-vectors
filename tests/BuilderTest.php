@@ -233,6 +233,43 @@ final class BuilderTest extends TestCase
         self::assertSame([], glob($this->dir . '/*.tmp'));
     }
 
+    /** Case 13: a records factory or an IteratorAggregate that throws is source code too. */
+    public function testThrowingFactoryOrAggregateIsWrapped(): void
+    {
+        $path = $this->path();
+        $this->buildFile($path, 2, [[1, 0, [1, 0]]]);
+        $old = (string) file_get_contents($path);
+        $boom = new RuntimeException('database went away');
+        // Another dim makes the file stale, so the factory is called.
+        $builder = new Builder($path, 3, self::opts());
+        try {
+            $builder->rebuildIfStale(3600, static function () use ($boom): iterable {
+                throw $boom;
+            });
+            self::fail('factory failure ignored');
+        } catch (BuildFailedException $e) {
+            self::assertSame($boom, $e->getPrevious());
+        }
+        $aggregate = new class ($boom) implements \IteratorAggregate {
+            public function __construct(private readonly RuntimeException $boom)
+            {
+            }
+
+            public function getIterator(): \Iterator
+            {
+                throw $this->boom;
+            }
+        };
+        try {
+            $builder->build($aggregate);
+            self::fail('aggregate failure ignored');
+        } catch (BuildFailedException $e) {
+            self::assertSame($boom, $e->getPrevious());
+        }
+        self::assertSame($old, file_get_contents($path));
+        self::assertSame([], glob($this->dir . '/*.tmp'));
+    }
+
     /** Acceptance 15 (case 15). */
     public function testWrongLengthIsSkipped(): void
     {

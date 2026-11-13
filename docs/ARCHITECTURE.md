@@ -164,8 +164,13 @@ be misread as an older one. No flag bit is spent on id width.
 
 ### D7. Time budget checked every 256 records (ruling; PRD question 6)
 
-`Scanner::BUDGET_CHECK_EVERY = 256`. The check is one modulo per record plus
-one `hrtime()` call every 256 records, and only when a budget is set. In the
+`Scanner::BUDGET_CHECK_EVERY = 256`, capped by
+`Scanner::BUDGET_CHECK_VALUES = 65536` values, so the interval is
+`max(1, min(256, intdiv(65536, dim)))` records (`budgetCheckInterval()`):
+256 at small dims, 128 at 512, 1 at 65,535. Without the cap a file of fewer
+than 256 records with a large dim was never checked at all. The check is one
+modulo per record plus one `hrtime()` call per interval, and only when a
+budget is set. In the
 benchmark a scan with a budget was not measurably slower than one without
 (0.747 s against 0.843 s, inside the noise). The budget is measured from the
 start of `top()`, so it includes opening the file. `ChunkedScanner` checks at

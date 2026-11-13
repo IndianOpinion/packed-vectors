@@ -172,7 +172,7 @@ class Builder
                 return null;
             }
             $removed = $this->removeStaleTemporaries();
-            $records = $source();
+            $records = $this->source($source);
             if (!is_iterable($records)) {
                 throw new InvalidArgumentException(sprintf(
                     'the records factory must return an iterable, got %s',
@@ -308,7 +308,8 @@ class Builder
             $index = -1;
             $buffer = '';
 
-            $iterator = $this->iterate($records);
+            // getIterator() of an IteratorAggregate is caller code too.
+            $iterator = $this->source(fn (): Iterator => $this->iterate($records));
             $this->source(static fn () => $iterator->rewind());
             while ($this->source(static fn (): bool => $iterator->valid())) {
                 $item = $this->source(static fn (): mixed => $iterator->current());

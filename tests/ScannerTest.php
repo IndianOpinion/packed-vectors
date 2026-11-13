@@ -504,6 +504,27 @@ final class ScannerTest extends TestCase
         self::assertCount(10, $ok->hits());
     }
 
+    /** Case 42: a file of few records with a large dim still honours the budget. */
+    public function testTimeBudgetWithFewLargeRecords(): void
+    {
+        $dim = 65535;
+        self::assertSame(1, Scanner::budgetCheckInterval($dim));
+        self::assertSame(128, Scanner::budgetCheckInterval(512));
+        self::assertSame(Scanner::BUDGET_CHECK_EVERY, Scanner::budgetCheckInterval(8));
+        $path = $this->path();
+        $this->buildFile($path, $dim, (static function () use ($dim): \Generator {
+            for ($i = 1; $i <= 40; $i++) {
+                yield [$i, 0, array_fill(0, $dim, (float) $i)];
+            }
+        })());
+        try {
+            (new Scanner($path, new ScanOptions(timeBudgetSeconds: 0.000001)))->top(array_fill(0, $dim, 1.0), 3);
+            self::fail('budget ignored');
+        } catch (BudgetExceededException $e) {
+            self::assertSame(1, $e->scanned);
+        }
+    }
+
     /** Acceptance 42 (case 43). */
     public function testReportFields(): void
     {
