@@ -1,0 +1,20 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * packed-vectors: inspect and verify packed vector files.
+ *
+ *     packed-vectors info <file>
+ *     packed-vectors verify <file>
+ *
+ * Exit codes: 0 ok, 1 the file is missing, unreadable, corrupt or fails
+ * verification, 2 usage error.
+ */
+
+declare(strict_types=1);
+
+require __DIR__ . '/../bootstrap.php';
+
+use IndianOpinion\PackedVectors\Cli;
+
+exit(Cli::main($argv, STDOUT, STDERR));
